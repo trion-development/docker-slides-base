@@ -49,6 +49,7 @@ RUN set -x \
        build-essential \
        libssl-dev \
        python-pygments \
+    && bundle config git.allow_insecure true \
     && bundle -j4 --without development test \
     && apt-get remove -y --purge \
        build-essential \
