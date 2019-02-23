@@ -31,7 +31,7 @@ RUN set -x \
     && apt-get install -y --no-install-recommends \
        openjdk-8-jdk-headless \
        openjdk-8-jre-headless \
-       #ca-certificates-java \
+    && rm /etc/java-8-openjdk/accessibility.properties \
     && (echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections) \
     && wget http://ftp.de.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb \
     && dpkg -i ttf-mscorefonts-installer_3.6_all.deb \
