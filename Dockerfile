@@ -1,6 +1,6 @@
 FROM ruby:2.4.2-slim
 
-MAINTAINER Thilo-Alexander Ginkel <tg@tgbyte.de>
+# See https://github.com/tgbyte/docker-slides-base and https://github.com/srt/docker-slides-base
 
 EXPOSE 10000 35729
 ENV RACK_ENV=production \
