@@ -1,4 +1,5 @@
-FROM ruby:2.6.1-slim
+FROM ruby:2.4.2-slim
+
 # See https://github.com/tgbyte/docker-slides-base and https://github.com/srt/docker-slides-base
 
 EXPOSE 10000 35729
@@ -12,32 +13,20 @@ ENV RACK_ENV=production \
     GRADLE_USER_HOME=/opt/gradle \
     BASENAME=slides
 
-#ADD sources.list /etc/apt/
+ADD sources.list /etc/apt/
 RUN set -x \
     && mkdir -p /home/slides/handouts \
-    && apt-get update \
-    && apt-get install -y \
-       man \
-       perl \
-       ssh-client \
-       git \
-       wget \
-       cabextract \
-       libmspack0 \
-       xfonts-utils \
     && echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list \
-    && mkdir -p /usr/share/man/man1/ \
     && apt-get update -qq \
-    && apt-get install -y --no-install-recommends \
-       openjdk-8-jdk-headless \
-       openjdk-8-jre-headless \
-    && rm /etc/java-8-openjdk/accessibility.properties \
+    && apt-get -t jessie-backports install -y --no-install-recommends \
+       git \
+       openjdk-8-jdk \
+       ca-certificates-java \
     && (echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections) \
-    && wget http://ftp.de.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb \
-    && dpkg -i ttf-mscorefonts-installer_3.6_all.deb \
     && apt-get install -y -o Apt::Install-Recommends=0 \
        ca-certificates \
        fonts-liberation \
+       ttf-mscorefonts-installer \
        inotify-tools \
        wget \
        xsltproc \
@@ -46,11 +35,13 @@ RUN set -x \
     && sha256sum -c /tmp/SHA256SUM \
     && rm /tmp/SHA256SUM \
     && chmod +x /usr/local/bin/dumb-init \
-    && (cd /opt && git clone https://github.com/asciidoctor/asciidoctor-fopub && sed -i 's,dependencies {,dependencies {\nruntime "org.apache.pdfbox:fontbox:1.8.13",' "${FOPUB_DIR}/build.gradle" && "${FOPUB_DIR}/gradlew" -p "$FOPUB_DIR" -q -u installDist) \
+    && (cd /opt && git clone https://github.com/asciidoctor/asciidoctor-fopub && sed -i 's,dependencies {,dependencies {\nruntime "org.apache.pdfbox:fontbox:1.8.13",' "${FOPUB_DIR}/build.gradle" && "${FOPUB_DIR}/gradlew" -p "$FOPUB_DIR" -q -u installApp) \
+    && apt-get remove -y --purge \
+       wget \
     && adduser --uid 500 --disabled-password --gecos "www" --quiet www
 
 COPY Gemfile /home/slides/
-#COPY Gemfile.lock /home/slides/
+COPY Gemfile.lock /home/slides/
 WORKDIR /home/slides
 
 RUN set -x \
@@ -58,9 +49,7 @@ RUN set -x \
        build-essential \
        libssl-dev \
        python-pygments \
-    && bundle config git.allow_insecure true \
     && bundle -j4 --without development test \
-    && bundle binstubs reveal-ck --force --path=/usr/local/bundle/bin \
     && apt-get remove -y --purge \
        build-essential \
        libssl-dev \
@@ -73,9 +62,7 @@ RUN set -x \
     && mv /home/slides/serve /usr/local/bin \
     && mv /home/slides/handouts /usr/local/bin \
     && mkdir -p /home/slides/slides \
-    && chown -R www.www /home/slides/slides \
-    && chmod a+w /home/slides/slides \
-    && cp -r /usr/local/bundle/bundler/gems/reveal-ck-44a86ac620cd/files/reveal.js/ /home/slides/slides/
+    && chown -R www.www /home/slides/slides
 
 USER www
 
