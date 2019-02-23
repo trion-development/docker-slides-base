@@ -45,7 +45,7 @@ COPY Gemfile.lock /home/slides/
 WORKDIR /home/slides
 
 RUN set -x \
-    && apt-get install -y -o Apt::Install-Recommends=0 \
+    && apt-get -t jessie-backports install -y -o Apt::Install-Recommends=0 \
        build-essential \
        libssl-dev \
        python-pygments \
