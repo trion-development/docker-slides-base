@@ -1,4 +1,4 @@
-FROM ruby:2.5.1-slim
+FROM ruby:2.6.1-slim
 # See https://github.com/tgbyte/docker-slides-base and https://github.com/srt/docker-slides-base
 
 EXPOSE 10000 35729
@@ -50,7 +50,7 @@ RUN set -x \
     && adduser --uid 500 --disabled-password --gecos "www" --quiet www
 
 COPY Gemfile /home/slides/
-COPY Gemfile.lock /home/slides/
+#COPY Gemfile.lock /home/slides/
 WORKDIR /home/slides
 
 RUN set -x \
@@ -60,6 +60,7 @@ RUN set -x \
        python-pygments \
     && bundle config git.allow_insecure true \
     && bundle -j4 --without development test \
+    && bundle binstubs reveal-ck --force --path=/usr/local/bundle/bin \
     && apt-get remove -y --purge \
        build-essential \
        libssl-dev \
@@ -72,7 +73,9 @@ RUN set -x \
     && mv /home/slides/serve /usr/local/bin \
     && mv /home/slides/handouts /usr/local/bin \
     && mkdir -p /home/slides/slides \
-    && chown -R www.www /home/slides/slides
+    && chown -R www.www /home/slides/slides \
+    && chmod a+w /home/slides/slides \
+    && cp -r /usr/local/bundle/bundler/gems/reveal-ck-44a86ac620cd/files/reveal.js/ /home/slides/slides/
 
 USER www
 
