@@ -1,4 +1,4 @@
-FROM ruby:2.5.1-slim
+FROM ruby:2.5-slim
 # See https://github.com/tgbyte/docker-slides-base and https://github.com/srt/docker-slides-base
 
 EXPOSE 10000 35729
@@ -12,20 +12,32 @@ ENV RACK_ENV=production \
     GRADLE_USER_HOME=/opt/gradle \
     BASENAME=slides
 
-ADD sources.list /etc/apt/
+#ADD sources.list /etc/apt/
 RUN set -x \
     && mkdir -p /home/slides/handouts \
-    && echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list \
-    && apt-get update -qq \
-    && apt-get -t jessie-backports install -y --no-install-recommends \
+    && apt-get update \
+    && apt-get install -y \
+       man \
+       perl \
+       ssh-client \
        git \
-       openjdk-8-jdk \
-       ca-certificates-java \
+       wget \
+       cabextract \
+       libmspack0 \
+       xfonts-utils \
+    && echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list \
+    && mkdir -p /usr/share/man/man1/ \
+    && apt-get update -qq \
+    && apt-get install -y --no-install-recommends \
+       openjdk-8-jdk-headless \
+       openjdk-8-jre-headless \
+       #ca-certificates-java \
     && (echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections) \
+    && wget http://ftp.de.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb \
+    && dpkg -i ttf-mscorefonts-installer_3.6_all.deb \
     && apt-get install -y -o Apt::Install-Recommends=0 \
        ca-certificates \
        fonts-liberation \
-       ttf-mscorefonts-installer \
        inotify-tools \
        wget \
        xsltproc \
