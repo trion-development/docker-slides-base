@@ -1,4 +1,4 @@
-FROM ruby:2.5-slim
+FROM ruby:2.5.1-slim
 # See https://github.com/tgbyte/docker-slides-base and https://github.com/srt/docker-slides-base
 
 EXPOSE 10000 35729
@@ -47,8 +47,6 @@ RUN set -x \
     && rm /tmp/SHA256SUM \
     && chmod +x /usr/local/bin/dumb-init \
     && (cd /opt && git clone https://github.com/asciidoctor/asciidoctor-fopub && sed -i 's,dependencies {,dependencies {\nruntime "org.apache.pdfbox:fontbox:1.8.13",' "${FOPUB_DIR}/build.gradle" && "${FOPUB_DIR}/gradlew" -p "$FOPUB_DIR" -q -u installDist) \
-    && apt-get remove -y --purge \
-       wget \
     && adduser --uid 500 --disabled-password --gecos "www" --quiet www
 
 COPY Gemfile /home/slides/
@@ -60,6 +58,7 @@ RUN set -x \
        build-essential \
        libssl-dev \
        python-pygments \
+    && bundle config git.allow_insecure true \
     && bundle -j4 --without development test \
     && apt-get remove -y --purge \
        build-essential \
